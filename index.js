@@ -144,7 +144,7 @@ module.exports = (info, keys) => {
  CREATE TABLE IF NOT EXISTS ${table} (
    _id VARCHAR(191) NOT NULL UNIQUE,
    _rev VARCHAR(255) NOT NULL,
-   document TEXT NOT NULL,
+   document LONGTEXT NOT NULL,
    ${keys.map(k => `${k} VARCHAR(255)`).join(', ')},
    primary key(_id)
  )
