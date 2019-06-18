@@ -12,7 +12,7 @@ npm install @twilson63/duckdb
 
 ## Basics
 
-```
+```js
 const duckdb = require('@twilson63/duckdb')
 const connectionInfo = {host: 'localhost', user: 'root', database: 'app'}
 const keys = ['type']
@@ -20,7 +20,7 @@ const store = 'mythings'
 const db = duckdb(connectionInfo, keys)(store)
 
 // create document
-const result = db.post({_id: 'greeting-1', type: 'greeting', greeting: 'hello', name: 'world'})
+const result = await db.post({_id: 'greeting-1', type: 'greeting', greeting: 'hello', name: 'world'})
 console.log(result)
 
 // get document
