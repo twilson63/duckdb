@@ -1,7 +1,7 @@
 {
   "name": "duckdb",
   "description": "duckdb is a api library that wraps around a mysql datastore and gives you a document db experience",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
