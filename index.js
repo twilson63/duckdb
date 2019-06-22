@@ -1,7 +1,7 @@
 const mysql = require('mysql')
 const uuid = require('uuid')
 const crypto = require('crypto')
-const { map, compose, join, prop, head, split, omit, inc } = require('ramda')
+const { map, compose, join, prop, head, split, omit, inc, values, keys } = require('ramda')
 
 const parseJSON = JSON.parse.bind(JSON)
 const sha256 = s => crypto.createHash('sha256').update(s).digest('hex')
@@ -23,9 +23,23 @@ module.exports = (info, keys) => {
       put,
       get,
       remove,
+      query,
       //bulkDocs
       close
     }
+
+    function query(whereValues={}) {
+      return new Promise(function (resolve, reject) {
+        let whereClause = keys(whereValues).map(k => db.escapeId(k) + ' = ?').join(' and ')
+        let query = `select document from ${table} where ${whereClause}`
+
+        db.query(query, values(whereValues), (err, results) => {
+          if (err) { return reject(err) }
+          resolve(map(compose(parseJSON, prop('document')), results))
+        }) 
+      })
+    }
+
     function allDocs(options={limit: 20}) {
       return new Promise(function (resolve, reject) {
         function argufy(arr) {
@@ -47,7 +61,6 @@ module.exports = (info, keys) => {
         }
 
         query += ` limit ${options.limit || 20}`
-        console.log(query)        
         db.query(query, (err, results) => {
           if (err) { return reject(err) }
           resolve(map(compose(parseJSON, prop('document')), results))

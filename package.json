@@ -1,5 +1,6 @@
 {
-  "name": "unoql",
+  "name": "duckdb",
+  "description": "duckdb is a api library that wraps around a mysql datastore and gives you a document db experience",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
@@ -8,5 +9,7 @@
     "ramda": "^0.26.1",
     "tape": "^4.10.2",
     "uuid": "^3.3.2"
-  }
+  },
+  "repository": "git@github.com:twilson63/duckdb.git",
+  "author": "Tom Wilson <twilson@trhc.com>"
 }
