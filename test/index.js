@@ -1,16 +1,45 @@
 const test = require('tape')
-const uno = require('../')
+const duckdb = require('../')
 const mysql = require('mysql')
 
 const info = {
   host: 'localhost',
   user: 'root',
-  password: 'root',
+  password: '',
   database: 'test'
 }
 
+test('find by type', async t => {
+  const db = duckdb(info, ['type'])('twilson63')
+  // setup
+  const conn = mysql.createConnection(info)
+  conn.connect()
+  await new Promise((resolve) => {
+    conn.query('insert into twilson63 set ?', {_id: '1', _rev: '1-1', type: 'foo', document: JSON.stringify({_id: '1', _rev: '1-1', type: 'foo', hello: 'world'})}, (err, result) => {
+      resolve(true)
+    })
+  })
+
+  const docs = await db.query({ type: 'foo'})
+
+  t.equal(docs.length, 1)
+  console.log(docs)
+
+  await new Promise((resolve, reject) => {
+    conn.query('delete from twilson63', () => resolve(true))
+  })
+
+  conn.end()
+  db.close(t.end)
+ 
+
+
+})
+
+
+
 test('get all docs', async t => {
-  const db = uno(info, ['type'])('twilson63')
+  const db = duckdb(info, ['type'])('twilson63')
   // setup
   const conn = mysql.createConnection(info)
   conn.connect()
@@ -36,7 +65,7 @@ test('get all docs', async t => {
   console.log(docs)
 
   await new Promise((resolve, reject) => {
-    conn.query('drop table twilson63', () => resolve(true))
+    conn.query('delete from twilson63', () => resolve(true))
   })
 
   conn.end()
@@ -45,9 +74,8 @@ test('get all docs', async t => {
 
 })
 
-
 test('get all docs', async t => {
-  const db = uno(info, ['type'])('twilson63')
+  const db = duckdb(info, ['type'])('twilson63')
   // setup
   const conn = mysql.createConnection(info)
   conn.connect()
@@ -73,7 +101,7 @@ test('get all docs', async t => {
   console.log(docs)
 
   await new Promise((resolve, reject) => {
-    conn.query('drop table twilson63', () => resolve(true))
+    conn.query('delete from twilson63', () => resolve(true))
   })
 
   conn.end()
@@ -82,8 +110,9 @@ test('get all docs', async t => {
 
 })
 
+
 test('get all docs', async t => {
-  const db = uno(info, ['type'])('twilson63')
+  const db = duckdb(info, ['type'])('twilson63')
   // setup
   const conn = mysql.createConnection(info)
   conn.connect()
@@ -109,7 +138,7 @@ test('get all docs', async t => {
   console.log(docs)
 
   await new Promise((resolve, reject) => {
-    conn.query('drop table twilson63', () => resolve(true))
+    conn.query('delete from twilson63', () => resolve(true))
   })
 
   conn.end()
@@ -118,15 +147,19 @@ test('get all docs', async t => {
 
 })
 
+
 test('remove document', async t => {
-  const base = uno(info, ['type'])
+  const base = duckdb(info, ['type'])
   const db = base('twilson63')
    //setup
   const conn = mysql.createConnection(info)
   conn.connect()
-  
-  conn.query('insert into twilson63 set ?', {_id: '1', _rev: '1-1', type: 'foo', document: JSON.stringify({_id: '1', _rev: '1-1', type: 'foo', hello: 'world'})}, (err, result) => {
-    if (err) { console.log(err) }
+
+  await new Promise((resolve) => {
+    conn.query('insert into twilson63 set ?', {_id: '1', _rev: '1-1', type: 'foo', document: JSON.stringify({_id: '1', _rev: '1-1', type: 'foo', hello: 'world'})}, (err, result) => {
+      if (err) { console.log(err) }
+      resolve(true)
+    })
   })
 
   const result = await db.remove({_id: '1', _rev: '1-1' })
@@ -142,7 +175,7 @@ test('remove document', async t => {
   t.ok(!exists)
 
   await new Promise((resolve, reject) => {
-    conn.query('drop table twilson63', () => resolve(true))
+    conn.query('delete from twilson63', () => resolve(true))
   })
 
   conn.end()
@@ -150,9 +183,8 @@ test('remove document', async t => {
  
 })
 
-
 test('put document no id should create document', async t => {
-  const base = uno(info, ['type'])
+  const base = duckdb(info, ['type'])
   const db = base('twilson63')
    //setup
   const conn = mysql.createConnection(info)
@@ -170,7 +202,7 @@ test('put document no id should create document', async t => {
   t.equal(newDoc._rev, result.rev)
   
   await new Promise((resolve, reject) => {
-    conn.query('drop table twilson63', () => resolve(true))
+    conn.query('delete from twilson63', () => resolve(true))
   })
 
   conn.end()
@@ -179,20 +211,22 @@ test('put document no id should create document', async t => {
 })
 
 test('put document with conflict', async t => {
-  const base = uno(info, ['type'])
+  const base = duckdb(info, ['type'])
   const db = base('twilson63')
    //setup
   const conn = mysql.createConnection(info)
   conn.connect()
-
-  conn.query('insert into twilson63 set ?', {_id: '1', _rev: '1-1', type: 'foo', document: JSON.stringify({_id: '1', _rev: '1-1', type: 'foo', hello: 'world'})}, (err, result) => {
-    if (err) { console.log(err) }
+  await new Promise(resolve => {
+    conn.query('insert into twilson63 set ?', {_id: '1', _rev: '1-1', type: 'foo', document: JSON.stringify({_id: '1', _rev: '1-1', type: 'foo', hello: 'world'})}, (err, result) => {
+      if (err) { console.log(err) }
+      resolve(true)
+    })
   })
   const result = await db.put({_id: '1', _rev: '2-1', type: 'foo', name: 'World', greeting: 'Hello' })
   t.equal(result.error, 'document conflict')
 
   await new Promise((resolve, reject) => {
-    conn.query('drop table twilson63', () => resolve(true))
+    conn.query('delete from twilson63', () => resolve(true))
   })
   
   conn.end()
@@ -201,14 +235,17 @@ test('put document with conflict', async t => {
 })
 
 test('put document no conflict', async t => {
-  const base = uno(info, ['type'])
+  const base = duckdb(info, ['type'])
   const db = base('twilson63')
    //setup
   const conn = mysql.createConnection(info)
   conn.connect()
 
-  conn.query('insert into twilson63 set ?', {_id: '1', _rev: '1-1', type: 'foo', document: JSON.stringify({_id: '1', _rev: '1-1', type: 'foo', hello: 'world'})}, (err, result) => {
-    if (err) { console.log(err) }
+  await new Promise(resolve => {
+    conn.query('insert into twilson63 set ?', {_id: '1', _rev: '1-1', type: 'foo', document: JSON.stringify({_id: '1', _rev: '1-1', type: 'foo', hello: 'world'})}, (err, result) => {
+      if (err) { console.log(err) }
+      resolve(true)
+    })
   })
   const result = await db.put({_id: '1', _rev: '1-1', type: 'foo', name: 'World', greeting: 'Hello' })
   t.ok(result.ok)
@@ -222,7 +259,7 @@ test('put document no conflict', async t => {
   t.equal(newDoc._rev, result.rev)
 
   await new Promise((resolve, reject) => {
-    conn.query('drop table twilson63', () => resolve(true))
+    conn.query('delete from twilson63', () => resolve(true))
   })
   conn.end()
   db.close(t.end)
@@ -231,15 +268,18 @@ test('put document no conflict', async t => {
 
 test('get document', async t => {
   // start init
-  const base = uno(info,['type'])
+  const base = duckdb(info,['type'])
   const db = base('twilson63')
 
    //setup
   const conn = mysql.createConnection(info)
   conn.connect()
 
-  conn.query('insert into twilson63 set ?', {_id: '1', _rev: '1-1', type: 'foo', document: JSON.stringify({_id: '1', _rev: '1-1', type: 'foo', hello: 'world'})}, (err, result) => {
-    if (err) { console.log(err) }
+  await new Promise(resolve => {
+    conn.query('insert into twilson63 set ?', {_id: '1', _rev: '1-1', type: 'foo', document: JSON.stringify({_id: '1', _rev: '1-1', type: 'foo', hello: 'world'})}, (err, result) => {
+      if (err) { console.log(err) }
+      resolve(true)
+    })
   })
 
  
@@ -248,14 +288,14 @@ test('get document', async t => {
   t.ok(true)
 
   await new Promise((resolve, reject) => {
-    conn.query('drop table twilson63', () => resolve(true))
+    conn.query('delete from twilson63', () => resolve(true))
   })
   conn.end()
   db.close(t.end)
 })
 
 test('create document', async t => {
-  const base = uno(info, ['type'])
+  const base = duckdb(info, ['type'])
 
   const db = base('twilson63')
 
@@ -268,7 +308,7 @@ test('create document', async t => {
   const conn = mysql.createConnection(info)
   conn.connect()
   await new Promise((resolve, reject) => {
-    conn.query('drop table twilson63', () => resolve(true))
+    conn.query('delete from twilson63', () => resolve(true))
   })
   conn.end()
   db.close(t.end)

@@ -11,5 +11,8 @@
     "uuid": "^3.3.2"
   },
   "repository": "git@github.com:twilson63/duckdb.git",
-  "author": "Tom Wilson <twilson@trhc.com>"
+  "author": "Tom Wilson <twilson@trhc.com>",
+  "scripts": {
+    "test": "tape test"
+  }
 }

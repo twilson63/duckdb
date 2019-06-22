@@ -30,7 +30,7 @@ module.exports = (info, keys) => {
 
     function query(whereValues={}) {
       return new Promise(function (resolve, reject) {
-        let whereClause = keys(whereValues).map(k => db.escapeId(k) + ' = ?').join(' and ')
+        let whereClause = Object.keys(whereValues).map(k => db.escapeId(k) + ' = ?').join(' and ')
         let query = `select document from ${table} where ${whereClause}`
 
         db.query(query, values(whereValues), (err, results) => {
@@ -73,6 +73,7 @@ module.exports = (info, keys) => {
       return new Promise(function(resolve, reject) {
         db.query(`select _rev from ${table} where _id = ?`, [doc._id], (err, results) => {
           if (err) { return reject(err) }
+          console.log(results)
           if (results.length === 0) { return resolve({error: 'document not found'}) }
           if (results[0]._rev !== doc._rev) { return resolve({error: 'rev does not match'}) }
           db.query(`delete from ${table} where _id = ? and _rev = ?`, [doc._id, doc._rev], (err, result) => {
